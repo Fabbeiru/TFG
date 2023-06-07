@@ -1,0 +1,41 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+
+data = pd.read_csv("./data/ref_allRSSIperAngle_data.csv")
+print(data.shape)
+data = data.drop_duplicates()
+print(data.shape)
+X = data.iloc[:, 3:11].values
+y = data.iloc[:, 11].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+k_range = range(1, 20)
+scores = []
+for k in k_range:
+    knn = KNeighborsClassifier(n_neighbors=k, weights='distance', metric='euclidean')
+    knn.fit(X_train, y_train)
+    scores.append(knn.score(X_test, y_test))
+plt.figure()
+plt.xlabel('k')
+plt.ylabel('accuracy')
+plt.scatter(k_range, scores)
+plt.xticks([0, 5, 10, 15, 20])
+plt.grid()
+
+bestK = scores.index(max(scores))+1
+print("Best K value:", scores.index(max(scores))+1)
+
+knn = KNeighborsClassifier(n_neighbors=bestK, weights='distance', metric='euclidean').fit(X_train, y_train)
+print("Accuracy training data:", knn.score(X_train, y_train))
+print("Accuracy test reference points data:", knn.score(X_test, y_test))
+
+test_data = pd.read_csv("./data/ale_allRSSIperAngle_data.csv")
+test_x = test_data.iloc[:, 3:11].values
+test_y = test_data.iloc[:, 11].values
+
+print("Accuracy test random points data:", knn.score(test_x, test_y))
+
+plt.show()

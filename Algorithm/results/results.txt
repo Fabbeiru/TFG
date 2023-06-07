@@ -1,0 +1,47 @@
+--- SVR MultioutputRegressor Best results ---
+Model: rbf_C5_G0.05
+Score: 0.9339025647354287
+Error: 1.890111134084713
+90% of the time: 3.37m
+
+--- SVR RegressorChained Best results ---
+Model: rbf_C5_G0.05
+Score: 0.9338371055211292
+Error: 1.8456909967456738
+90% of the time: 3.17m
+
+-----------------------------------------------------------------------------------
+
+--- LinearSVR MultioutputRegressor Best results ---
+Model: C0.5_I500
+Score: 0.9023897535056074
+Error: 2.266566152399038
+90% of the time: 3.78m
+
+--- LinearSVR RegressorChained Best results ---
+Model: C8_I500
+Score: 0.9246891901305054
+Error: 2.0952596864065347
+90% of the time: 3.07m
+
+-----------------------------------------------------------------------------------
+
+--- NuSVR MultioutputRegressor Best results ---
+Model: Nu0.5_rbf_C5_G0.05
+Score: 0.9374904963415196
+Error: 1.840494919117242
+90% of the time: 3.31m
+
+--- NuSVR RegressorChained Best results ---
+Model: Nu0.6_rbf_C5_G0.05
+Score: 0.9360335806703886
+Error: 1.8180076259772135
+90% of the time: 3.19m
+
+-----------------------------------------------------------------------------------
+
+--- Best results ---
+Model: K2
+Score: 0.9638655100427066
+Error: 1.318393040374624
+90% of the time: 2.42m

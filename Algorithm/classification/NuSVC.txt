@@ -1,0 +1,22 @@
+import pandas as pd
+from sklearn.svm import NuSVC
+from sklearn.model_selection import train_test_split
+
+data = pd.read_csv("./data/ref_MeanRSSIBeacons_data.csv")
+print(data.shape)
+data = data.drop_duplicates()
+print(data.shape)
+X = data.iloc[:, 3:11].values
+y = data.iloc[:, 11].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+nuSVC = NuSVC(kernel='linear', decision_function_shape='ovo', random_state=0).fit(X_train, y_train)
+print("Accuracy training data:", nuSVC.score(X_train, y_train))
+print("Accuracy test reference points data:", nuSVC.score(X_test, y_test))
+
+test_data = pd.read_csv("./data/ale_MeanRSSIBeacons_data.csv")
+test_x = test_data.iloc[:, 3:11].values
+test_y = test_data.iloc[:, 11].values
+
+print("Accuracy test reference points data:", nuSVC.score(test_x, test_y))

@@ -1,0 +1,122 @@
+import re
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.svm import LinearSVR
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.multioutput import RegressorChain
+from sklearn.preprocessing import StandardScaler
+
+coord = pd.read_excel("./data/coordenadas_PR_PA.xlsx", header=None, engine='openpyxl', sheet_name='Coord-PA')
+columns = ['Point', 'Xr', 'Yr']
+df_res = pd.DataFrame(coord.iloc[:].values, columns=columns)
+
+df_train = pd.read_csv("./data/ref_points_data.csv")
+X_train = df_train.iloc[:, 0:12]
+y_train = df_train.iloc[:, 12:14]
+
+df_test = pd.read_csv("./data/ran_all_samples_data.csv")
+X_test = df_test.iloc[:, 0:12]
+y_test = df_test.iloc[:, 12:14]
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+method = "LinearSVR_direct"
+
+
+def compareModelParams():
+    Cs = [0.01, 0.1, 0.5, 1, 2, 5, 6, 7, 8, 9, 10, 15, 20]
+    Is = [250, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12500, 15000, 20000]
+
+    models = []
+    scores = []
+    errors = []
+    metrics = []
+    writer = pd.ExcelWriter("./results/"+method+".xlsx")
+
+    for i in Is:
+        for C in Cs:
+                model = LinearSVR(C=C, max_iter=i, random_state=0)
+                wrapper = MultiOutputRegressor(model).fit(X_train, y_train)
+                y_pred = wrapper.predict(X_test)
+
+                df_res['Xe'] = y_pred[:, 0]
+                df_res['Ye'] = y_pred[:, 1]
+                df_res['dx'] = np.subtract(df_res['Xr'], df_res['Xe'])
+                df_res['dy'] = np.subtract(df_res['Yr'], df_res['Ye'])
+                df_res['error'] = np.sqrt(list(np.add(np.power(df_res['dx'], 2), np.power(df_res['dy'], 2))))
+                mean_error = np.mean(df_res['error'])
+                errors.append(mean_error)
+                score = wrapper.score(X_test, y_test)
+                scores.append(score)
+                model_name = "C"+str(C)+"_I"+str(i)
+                models.append(model_name)
+                metrics.append([model_name, score, mean_error])
+                df_res.to_excel(writer, index=False, sheet_name=model_name)
+
+    df_metrics = pd.DataFrame(metrics, columns=['Model', 'Score', 'Mean_err'])
+    df_metrics.to_excel(writer, index=False, sheet_name='results')
+    writer.save()
+
+    best_index = errors.index(min(errors))
+    print("--- Best results ---")
+    print("Model:", models[best_index])
+    print("Score:", scores[best_index])
+    print("Error:", errors[best_index])
+    getPlots(models[best_index])
+
+
+def getPlots(config):
+    C = float(re.search('C(.*)_', config).group(1))
+    I = float(re.search('_I(.*)$', config).group(1))
+    model = LinearSVR(C=C, max_iter=I, random_state=0)
+    wrapper = MultiOutputRegressor(model).fit(X_train, y_train)
+    y_pred = wrapper.predict(X_test)
+
+    plt.subplot(1, 2, 1)
+    plt.suptitle("LinearSVR Multioutput (C="+str(C)+", I="+str(I)+")")
+    plt.title("Coordinates prediction")
+    plt.scatter(y_test.iloc[:, 0].values, y_test.iloc[:, 1].values, label='Real', zorder=10)
+    plt.scatter(y_pred[:, 0], y_pred[:, 1], c='r', marker='x', label='Predicted', zorder=10)
+
+    for i in range(0, 40):
+        x = [y_test.iloc[i, 0], y_pred[i, 0]]
+        y = [y_test.iloc[i, 1], y_pred[i, 1]]
+        plt.plot(x, y, c='k', zorder=0)
+
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
+    plt.legend(fancybox=True, framealpha=1, shadow=True, borderpad=1)
+    plt.grid()
+
+    df = pd.read_excel("./results/"+method+".xlsx", engine='openpyxl', sheet_name=config)
+    errors = np.sort(df['error'].values)
+    errors = np.insert(errors, 0, 0)
+    y = [0]
+    for i in range(1, 41):
+        y.append((100*i)/40)
+
+    plt.subplot(1, 2, 2)
+    plt.title("Precision")
+    plt.plot(errors, y, zorder=10)
+    plt.xlim(0, 10)
+    plt.ylim(0, 100)
+    # Highlight the error for 90% of cases
+    error = errors[36]
+    x = ([0, error], [error, error])
+    y = ([90, 90], [90, 0])
+    plt.plot(x, y, '--', c='orange', zorder=0)
+    plt.annotate("Precision is 90%", xy=(error, 90),
+                 fontsize=11, xytext=(6.1, 55), wrap=True,
+                 arrowprops=dict(facecolor='orange', connectionstyle='angle3', shrink=0.1, alpha=0.75))
+    error_str = "%.2f" % error
+    plt.text(6.1, 50, "within "+error_str+"m.", fontsize=11)
+    plt.xlabel('Error (m)')
+    plt.ylabel('Cumulative Distribution Function')
+    plt.grid()
+    plt.show()
+
+
+compareModelParams()

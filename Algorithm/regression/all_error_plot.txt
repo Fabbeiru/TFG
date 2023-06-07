@@ -1,0 +1,76 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_excel("./results/LinearSVR_direct.xlsx", engine='openpyxl', sheet_name="C0.5_I500")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="LinearSVR_direct")
+
+df = pd.read_excel("./results/LinearSVR_chained.xlsx", engine='openpyxl', sheet_name="C8_I500")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="LinearSVR_chained")
+
+df = pd.read_excel("./results/SVR_direct.xlsx", engine='openpyxl', sheet_name="rbf_C5_G0.05")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="SVR_direct")
+
+df = pd.read_excel("./results/SVR_chained.xlsx", engine='openpyxl', sheet_name="rbf_C5_G0.05")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="SVR_chained")
+
+df = pd.read_excel("./results/NuSVR_direct.xlsx", engine='openpyxl', sheet_name="Nu0.5_rbf_C5_G0.05")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="NuSVR_direct")
+
+df = pd.read_excel("./results/NuSVR_chained.xlsx", engine='openpyxl', sheet_name="Nu0.6_rbf_C5_G0.05")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="NuSVR_chained")
+
+df = pd.read_excel("./results/WKNN.xlsx", engine='openpyxl', sheet_name="K2")
+errors = np.sort(df['error'].values)
+errors = np.insert(errors, 0, 0)
+y = [0]
+for i in range(1, 41):
+    y.append((100 * i) / 40)
+
+plt.plot(errors, y, zorder=10, label="WKNN")
+
+
+plt.title("Precision")
+plt.xlim(0, 10)
+plt.ylim(0, 100)
+plt.xlabel('Error (m)')
+plt.ylabel('Cumulative Distribution Function')
+plt.legend(loc="lower right")
+plt.grid()
+plt.show()

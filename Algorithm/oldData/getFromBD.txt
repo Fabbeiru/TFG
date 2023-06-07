@@ -1,0 +1,92 @@
+import sqlite3
+import pandas as pd
+
+referenciaDB = "BD_puntos_referencia_justificacion_IPS.sqlite3"
+aleatorioBD = "BD_puntos_aleatorios_justificacion_IPS.sqlite3"
+orientations = [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]
+
+
+# CSVs para las tablas Capture y Beacon_BLE_Signal para puntos de referencia y aleatorios
+def getBaseCSVs():
+    conn = sqlite3.connect(referenciaDB)
+    pd.read_sql_query("SELECT * FROM Capture", conn).to_csv("Captura_referencia.csv", index=False)
+    pd.read_sql_query("SELECT * FROM Beacon_BLE_Signal", conn).to_csv("BLE_referencia.csv", index=False)
+    conn.close()
+
+    conn = sqlite3.connect(aleatorioBD)
+    pd.read_sql_query("SELECT * FROM Capture", conn).to_csv("Captura_aleatorio.csv", index=False)
+    pd.read_sql_query("SELECT * FROM Beacon_BLE_Signal", conn).to_csv("BLE_aleatorio.csv", index=False)
+    conn.close()
+
+
+# CSV --> X, Y, Z, Angle, RSSI, Label
+def getEntryPerSignalCSV(db, rotations, filename):
+    conn = sqlite3.connect(db)
+    df = pd.read_sql_query("SELECT DISTINCT Position_x, Position_y, Position_z from Capture", conn)
+
+    headers = ['X', 'Y', 'Z', 'Angle', 'RSSI', 'Label']
+    data = []
+
+    n = 1
+    for capture in df.iloc[:, :].values:
+        for angle in rotations:
+            signals = pd.read_sql_query("SELECT bs.RSSI FROM Beacon_BLE_Signal bs WHERE Protocol = 'Eddystone' AND bs.Id_capture IN ( SELECT c.Id FROM Capture c WHERE c.Position_x LIKE " + str(capture[0]) + " AND c.Position_y LIKE " + str(capture[1]) + " AND c.Position_z LIKE " + str(capture[2]) + " AND c.Dongle_rotation LIKE " + str(angle) + ")", conn)
+            for rssi in signals.iloc[:].values:
+                row = capture.tolist()
+                row.append(angle)
+                row.append(rssi[0])
+                row.append(n)
+                data.append(row)
+        n = n + 1
+
+    conn.close()
+
+    res = pd.DataFrame(data, columns=headers)
+    res.to_csv(filename, index=False)
+    print(res.info())
+    print(res)
+
+# CSV --> X, Y, Z, Angle, RSSI_1, RSSI_2, RSSI_3, RSSI_4, RSSI_5, RSSI_6, RSSI_7, Label
+def getMeanSignalPerBeaconCSV(db, rotations, filename):
+    conn = sqlite3.connect(db)
+    df = pd.read_sql_query("SELECT DISTINCT Position_x, Position_y, Position_z from Capture", conn)
+
+    macs = ['e5:1d:1a:5e:0c:cc', 'f3:77:12:43:f6:5b', 'ee:0b:21:12:e2:2f', 'f9:dc:58:39:94:49', 'db:fc:c0:4b:7f:83',
+            'ca:2a:e4:73:e6:0e', 'e5:37:86:5f:36:01']
+    headers = ['X', 'Y', 'Z', 'Angle', 'RSSI_1', 'RSSI_2', 'RSSI_3', 'RSSI_4', 'RSSI_5', 'RSSI_6', 'RSSI_7', 'Label']
+    data = []
+
+    n = 1
+    for capture in df.iloc[:, :].values:
+        for angle in rotations:
+            total = 0
+            i = 0
+            row = capture.tolist()
+            row.append(angle)
+            for mac in macs:
+                signals = pd.read_sql_query(
+                    "SELECT bs.RSSI FROM Beacon_BLE_Signal bs WHERE Protocol = 'Eddystone' AND Mac = \'" + mac + "\' AND bs.Id_capture IN ( SELECT c.Id FROM Capture c WHERE c.Position_x LIKE " + str(
+                        capture[0]) + " AND c.Position_y LIKE " + str(capture[1]) + " AND c.Position_z LIKE " + str(
+                        capture[2]) + " AND c.Dongle_rotation LIKE " + str(angle) + ")", conn)
+                for signal in signals.iloc[:].values:
+                    total = total + signal[0]
+                    i = i + 1
+                mean = total / i
+                row.append(mean)
+            row.append(n)
+            data.append(row)
+        n = n + 1
+
+    conn.close()
+
+    res = pd.DataFrame(data, columns=headers)
+    res.to_csv(filename, index=False)
+    print(res.info())
+    print(res)
+
+
+# getBaseCSVs()
+# getEntryPerSignalCSV(referenciaDB, orientations, "ref_data.csv")
+# getEntryPerSignalCSV(aleatorioBD, [90.0], "ale_data.csv")
+# getMeanSignalPerBeaconCSV(referenciaDB, orientations, "ref_MeanRSSIBeacons_data.csv")
+# getMeanSignalPerBeaconCSV(aleatorioBD, [90.0], "ale_MeanRSSIBeacons_data.csv")

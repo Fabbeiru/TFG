@@ -1,0 +1,20 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+data = pd.read_excel("./rawData/coordenadas_PR_PA.xlsx", engine='openpyxl', header=None, sheet_name='Coord-PR')
+refX = data[1].values
+refY = data[2].values
+
+data = pd.read_excel("./rawData/coordenadas_PR_PA.xlsx", engine='openpyxl', header=None, sheet_name='Coord-PA')
+aleX = data[1].values
+aleY = data[2].values
+
+plt.title("Reference and random points map")
+plt.plot(refX, refY, 'o', label="Reference points")
+plt.plot(aleX, aleY, 'o', label="Random points")
+plt.xlabel("x (m)")
+plt.ylabel("y (m)")
+plt.legend()
+plt.grid()
+plt.show()

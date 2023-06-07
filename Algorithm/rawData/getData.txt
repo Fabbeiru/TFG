@@ -1,0 +1,58 @@
+import pandas as pd
+import numpy as np
+
+data = pd.read_excel("./rawData/BD_PR.xlsx", engine='openpyxl', header=None, sheet_name=None)
+
+columns = ["RSSI_1", "RSSI_2", "RSSI_3", "RSSI_4", "RSSI_5", "RSSI_6", "RSSI_7", "RSSI_8", "RSSI_9", "RSSI_10", "RSSI_11", "RSSI_12"]
+orientations = ['E', 'N', 'W', 'S']
+mean_values = []
+
+for i in range(1, 113):
+    max_values = []
+    for ori in orientations:
+        sheet_name = "PR-"+str(i)+"_"+ori
+        print(sheet_name)
+        df = data[sheet_name]
+        df = df.loc[(df != 0).any(axis=1)]
+        max_values.append(df.max().values)
+    aux = pd.DataFrame(max_values)
+    mean_values.append(np.round(aux.mean().values))
+
+res = pd.DataFrame(mean_values, columns=columns)
+
+data = pd.read_excel("./rawData/coordenadas_PR_PA.xlsx", engine='openpyxl', header=None, sheet_name='Coord-PR')
+coordX = data[1].values
+coordY = data[2].values
+res['X'] = coordX
+res['Y'] = coordY
+
+res.to_csv("ref_points_data.csv", index=False)
+
+----------------------------------------------------------------------------
+
+import pandas as pd
+import numpy as np
+
+data = pd.read_excel("./rawData/BD_PA.xlsx", engine='openpyxl', header=None, sheet_name=None)
+
+columns = ["RSSI_1", "RSSI_2", "RSSI_3", "RSSI_4", "RSSI_5", "RSSI_6", "RSSI_7", "RSSI_8", "RSSI_9", "RSSI_10", "RSSI_11", "RSSI_12"]
+orientations = ['E']
+max_values = []
+
+for i in range(1, 41):
+    for ori in orientations:
+        sheet_name = "PA-"+str(i)+"_"+ori
+        print(sheet_name)
+        df = data[sheet_name]
+        df = df.loc[(df != 0).any(axis=1)]
+        max_values.append(df.max().values)
+
+res = pd.DataFrame(max_values, columns=columns)
+
+data = pd.read_excel("./rawData/coordenadas_PR_PA.xlsx", engine='openpyxl', header=None, sheet_name='Coord-PA')
+coordX = data[1].values
+coordY = data[2].values
+res['X'] = coordX
+res['Y'] = coordY
+
+res.to_excel("ran_points_data.xlsx", index=False)

@@ -1,0 +1,113 @@
+import sqlite3
+import pandas as pd
+
+referenciaDB = "BD_puntos_referencia_justificacion_IPS.sqlite3"
+aleatorioBD = "BD_puntos_aleatorios_justificacion_IPS.sqlite3"
+orientations = [90.0]
+
+conn = sqlite3.connect(aleatorioBD)
+df = pd.read_sql_query("SELECT DISTINCT Position_x, Position_y, Position_z from Capture", conn)
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+df = df.drop(df.index[0])
+
+macs = ['e5:1d:1a:5e:0c:cc', 'f3:77:12:43:f6:5b', 'ee:0b:21:12:e2:2f', 'f9:dc:58:39:94:49', 'db:fc:c0:4b:7f:83',
+        'ca:2a:e4:73:e6:0e', 'e5:37:86:5f:36:01']
+headers = ['X', 'Y', 'Z', 'Angle', 'RSSI_1', 'RSSI_2', 'RSSI_3', 'RSSI_4', 'RSSI_5', 'RSSI_6', 'RSSI_7', 'Label']
+
+data = []
+dataframes = []
+
+n = 1
+for capture in df.iloc[:, :].values:
+    for angle in orientations:
+        row = capture.tolist()
+        row.append(angle)
+        for mac in macs:
+            signals = pd.read_sql_query(
+                "SELECT bs.RSSI FROM Beacon_BLE_Signal bs WHERE Protocol = 'Eddystone' AND Mac = \'" + mac + "\' AND bs.Id_capture IN ( SELECT c.Id FROM Capture c WHERE c.Position_x LIKE " + str(
+                    capture[0]) + " AND c.Position_y LIKE " + str(capture[1]) + " AND c.Position_z LIKE " + str(
+                    capture[2]) + " AND c.Dongle_rotation LIKE " + str(angle) + ")", conn)
+            aux = []
+            for signal in signals.iloc[:].values:
+                aux.append(signal[0])
+            data.append(aux)
+        break
+    break
+
+conn.close()
+
+lengths = []
+for x in data:
+    print(len(x))
+    lengths.append(len(x))
+
+max_len = max(lengths)
+for i in range(0, 7):
+    if not max_len == lengths[i]:
+        data[i].extend([-99] * (max_len - lengths[i]))
+
+posX = []
+posX.extend([row[0]] * (max_len - len(posX)))
+posY = []
+posY.extend([row[1]] * (max_len - len(posY)))
+posZ = []
+posZ.extend([row[2]] * (max_len - len(posZ)))
+ang = []
+ang.extend([row[3]] * (max_len - len(ang)))
+
+res = pd.DataFrame()
+res[headers[0]] = posX
+res[headers[1]] = posY
+res[headers[2]] = posZ
+res[headers[3]] = ang
+res[headers[4]] = data[0]
+res[headers[5]] = data[1]
+res[headers[6]] = data[2]
+res[headers[7]] = data[3]
+res[headers[8]] = data[4]
+res[headers[9]] = data[5]
+res[headers[10]] = data[6]
+dataframes.append(res)
+
+dataframes[0].to_csv("ale_7_"+str(orientations[0])+".csv", index=False)
+
+-----------------------------------------------------------------------------------------
+
+import pandas as pd
+
+df = pd.read_csv("pos1.csv")
+df2 = pd.read_csv("pos2.csv")
+df3 = pd.read_csv("pos3.csv")
+df4 = pd.read_csv("pos4.csv")
+df5 = pd.read_csv("pos5.csv")
+df6 = pd.read_csv("pos6.csv")
+df7 = pd.read_csv("pos7.csv")
+df8 = pd.read_csv("pos8.csv")
+df9 = pd.read_csv("pos9.csv")
+df10 = pd.read_csv("pos10.csv")
+df11 = pd.read_csv("pos11.csv")
+df12 = pd.read_csv("pos12.csv")
+
+shapes = [df.shape, df2.shape, df3.shape, df4.shape, df5.shape, df6.shape, df7.shape, df8.shape, df9.shape, df10.shape, df11.shape, df12.shape]
+total = 0
+for shape in shapes:
+    print(shape)
+    total = total + shape[0]
+print(total)
+dfAll = df.append(df2, ignore_index=True)
+dfAll = dfAll.append(df3, ignore_index=True)
+dfAll = dfAll.append(df4, ignore_index=True)
+dfAll = dfAll.append(df5, ignore_index=True)
+dfAll = dfAll.append(df6, ignore_index=True)
+dfAll = dfAll.append(df7, ignore_index=True)
+dfAll = dfAll.append(df8, ignore_index=True)
+dfAll = dfAll.append(df9, ignore_index=True)
+dfAll = dfAll.append(df10, ignore_index=True)
+dfAll = dfAll.append(df11, ignore_index=True)
+dfAll = dfAll.append(df12, ignore_index=True)
+dfAll.to_csv("ref_allRSSIperAngle_data.csv", index=False)

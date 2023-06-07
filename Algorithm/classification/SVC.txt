@@ -1,0 +1,54 @@
+import pandas as pd
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+
+data = pd.read_csv("./data/ref_allRSSIperAngle_data.csv")
+X = data.iloc[:, 3:11].values
+y = data.iloc[:, 11].values
+print(data.shape)
+data = data.drop_duplicates()
+print(data.shape)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+print("--- Train data testing ---")
+linear = svm.SVC(kernel='linear').fit(X_train, y_train)
+linear_pred = linear.predict(X_test)
+accuracy_lin = linear.score(X_test, y_test)
+print("Accuracy Linear Kernel: ", accuracy_lin)
+
+poly = svm.SVC(kernel='poly').fit(X_train, y_train)
+poly_pred = poly.predict(X_test)
+accuracy_poly = poly.score(X_test, y_test)
+print("Accuracy Polynomial Kernel: ", accuracy_poly)
+
+rbf = svm.SVC(kernel='rbf').fit(X_train, y_train)
+rbf_pred = rbf.predict(X_test)
+accuracy_rbf = rbf.score(X_test, y_test)
+print("Accuracy Radial Basis Kernel: ", accuracy_rbf)
+
+sig = svm.SVC(kernel='sigmoid').fit(X_train, y_train)
+sig_pred = sig.predict(X_test)
+accuracy_sig = sig.score(X_test, y_test)
+print("Accuracy Sigmoid Kernel: ", accuracy_sig)
+
+print("--- Test data testing ---")
+test_data = pd.read_csv("./data/ale_allRSSIperAngle_data.csv")
+test_x = test_data.iloc[:, 3:11].values
+test_y = test_data.iloc[:, 11].values
+
+linear_pred = linear.predict(test_x)
+accuracy_lin = linear.score(test_x, test_y)
+print("Accuracy Linear Kernel: ", accuracy_lin)
+
+poly_pred = poly.predict(test_x)
+accuracy_poly = poly.score(test_x, test_y)
+print("Accuracy Polynomial Kernel: ", accuracy_poly)
+
+rbf_pred = rbf.predict(test_x)
+accuracy_rbf = rbf.score(test_x, test_y)
+print("Accuracy Radial Basis Kernel: ", accuracy_rbf)
+
+sig_pred = sig.predict(test_x)
+accuracy_sig = sig.score(test_x, test_y)
+print("Accuracy Sigmoid Kernel: ", accuracy_sig)
