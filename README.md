@@ -1,6 +1,11 @@
-# Trabajo de Fin de Grado de Ingeniería Informática en la Universidad de Las Palmas de Gran Canaria.
+# TFG sobre Posicionamiento en Interiores
 
 ## Autonomía
 
 ## Sistema de alertas
-
+<p align="center">
+  <img src="Images/AlertsGUI.png" alt="ROBOMAP Inspector">
+</p>
+<p align="center">
+Figura 1: Interfaz gráfica ROBOMAP Inspector.
+</p>
