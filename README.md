@@ -1,6 +1,6 @@
 # TFG sobre Posicionamiento en Interiores
 
-Trabajo de Fin de Grado (TFG) de Ingeniería Informática en la Universidad de Las Palmas de Gran Canaria. El objetivo general de este trabajo es contribuir en el proyecto de investigación de Sistemas de Posicionamiento en Interiores o IPS (del inglés <i>Indoors Positioning System</i>) del Instituto Universitario de Cibernética, Empresas y Sociedad (IUCES). Se divide en tres partes:
+Trabajo de Fin de Grado (TFG) de Ingeniería Informática en la Universidad de Las Palmas de Gran Canaria. El objetivo general de este trabajo es contribuir en el proyecto de investigación de Sistemas de Posicionamiento en Interiores o IPS (del inglés *Indoors Positioning System*) del Instituto Universitario de Cibernética, Empresas y Sociedad (IUCES). Se divide en tres partes:
 
 ## Autonomía
 ROBOMAP es una plataforma robótica que es capaz de seguir una ruta mientras realiza la captura de señales de balizas (en inglés beacons) Bluetooth Low Energy (BLE) en un entorno de interiores. Hasta el momento funciona conectándose a una toma de corriente. Como se quiere dotar la plataforma de autonomía energética, se realiza un estudio de sus componentes y correspondiente consumo.
